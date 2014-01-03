@@ -78,6 +78,8 @@ public class PullCommand extends TransportCommand<PullCommand, PullResult> {
 
 	private final static String DOT = "."; //$NON-NLS-1$
 
+	private String remote = null;
+
 	private ProgressMonitor monitor = NullProgressMonitor.INSTANCE;
 
 	private PullRebaseMode pullRebaseMode = PullRebaseMode.USE_CONFIG;
@@ -177,13 +179,17 @@ public class PullCommand extends TransportCommand<PullCommand, PullResult> {
 					JGitText.get().cannotPullOnARepoWithState, repo
 							.getRepositoryState().name()));
 
-		// get the configured remote for the currently checked out branch
-		// stored in configuration key branch.<branch name>.remote
 		Config repoConfig = repo.getConfig();
-		String remote = repoConfig.getString(
+
+		if (remote == null) {
+			// get the configured remote for the currently checked out branch
+			// stored in configuration key branch.<branch name>.remote
+        	remote = repoConfig.getString(
 				ConfigConstants.CONFIG_BRANCH_SECTION, branchName,
 				ConfigConstants.CONFIG_KEY_REMOTE);
-		if (remote == null)
+		}
+        
+        if (remote == null)
 			// fall back to default remote
 			remote = Constants.DEFAULT_REMOTE_NAME;
 
@@ -308,5 +314,28 @@ public class PullCommand extends TransportCommand<PullCommand, PullResult> {
 		monitor.endTask();
 		return result;
 	}
+    
+    	/**
+	 * The remote (uri or name) used for the fetch operation. If no remote is
+	 * set, the default value of <code>Constants.DEFAULT_REMOTE_NAME</code> will
+	 * be used.
+	 *
+	 * @see Constants#DEFAULT_REMOTE_NAME
+	 * @param remote
+	 * @return {@code this}
+	 */
+	public PullCommand setRemote(String remote) {
+		checkCallable();
+		this.remote = remote;
+		return this;
+	}
+
+	/**
+	 * @return the remote used for the remote operation
+	 */
+	public String getRemote() {
+		return remote;
+	}
+
 
 }
